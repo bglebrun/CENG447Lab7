@@ -1,19 +1,30 @@
 #include "ultrasonic.h"
 
-/*
+/******************************************************************************
+ * 
+ * Overflow detection helpers
+ * 
  * Flag for overflow:
  * false = no overflow.
  * true = overflow happened in test
  */
 volatile bool TimerOverflow = false;
 
-/*
- *
- * Ultrasonic sensor: A4 A5 (portc 4 5)
- * Servo Motor: 3 (portd 3)
- */
+// Getter for overflow status
+bool getOverflowStatus() { return TimerOverflow; }
 
-/*
+// Overflow vector
+ISR(TIMER1_OVF_vect)
+{
+    // Timer 1 overflow
+    TimerOverflow = true;
+}
+
+/******************************************************************************
+ * 
+ * Ultrasonic sensor functions
+ * 
+ * 
  * Sets the pins for ultrasonic sensor,
  * then will setup the necessary timer 1
  * to properly time the sensor
@@ -46,23 +57,13 @@ void initUltrasonic()
     turnoffTimer1();
 }
 
-// convenience function to turn the timer off
-void turnoffTimer1() { TCCR1B &= 0x00; }
-
-// convenience function to turn the timer back on with a default prescaler
-void turnonTimer1()
+unsigned int readUltrasonic() 
 {
-    /*
-     * Prescaler value goes here
-     * 1 - no prescaling
-     * 2 - clock /8
-     * 3 - clock /64
-     * 4 - clock /256 - 16us
-     * 5 - clock /1024 - 64us
-     * source -
-     * https://sites.google.com/site/qeewiki/books/avr-guide/timers-on-the-atmega328
-     */
-    TCCR1B |= 0x05;
+    // Trigger the sensor
+    triggerUltrasonic();
+    // Spin while we either timeout or wait
+    while(!TimerOverflow && !responseAvailable);
+    return timeResponse;
 }
 
 // Triggers ultrasonic sensor, then waits 60 ms
@@ -70,22 +71,12 @@ void triggerUltrasonic()
 {
     TimerOverflow = false;
     setBit(PORTC, US_TRIG);
-    _delay_us(10);
+    _delay_us(9);
     clearBit(PORTC, US_TRIG);
     // reset counter 1
     // TIM16_WriteTCNT1(0);
     // Delay while pulse is sent
-    _delay_ms(60);
-}
-
-// Getter for overflow status
-bool getOverflowStatus() { return TimerOverflow; }
-
-// Overflow vector
-ISR(TIMER1_OVF_vect)
-{
-    // Timer 1 overflow
-    TimerOverflow = true;
+    _delay_us(60);
 }
 
 /*
@@ -99,6 +90,27 @@ unsigned int receiveUltrasonic()
     // return ((58 * 64) / i);
     return (i * 64) / 58;
 }
+
+/******************************************************************************
+ * 
+ * Magical Timer land
+ * 
+ * Prescaler value goes in TCCR1B
+ * 0 - off
+ * 1 - no prescaling
+ * 2 - clock /8
+ * 3 - clock /64
+ * 4 - clock /256 - 16us
+ * 5 - clock /1024 - 64us
+ * source -
+ * https://sites.google.com/site/qeewiki/books/avr-guide/timers-on-the-atmega328
+ */
+
+// convenience function to turn the timer off
+void turnoffTimer1() { TCCR1B &= 0x00; }
+
+// convenience function to turn the timer back on with a default prescaler
+void turnonTimer1() { TCCR1B |= 0x05; }
 
 // Reads from timer 1 counter
 unsigned int TIM16_ReadTCNT1()
