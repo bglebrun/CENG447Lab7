@@ -38,7 +38,6 @@ void initUltrasonic()
 
     clearBit(PORTC, US_TRIG);
     clearBit(PORTC, US_ECHO);
-    PORTC = 0x00;
 
     // setBit(PORTC, US_ECHO); // pull-up for echo
 
