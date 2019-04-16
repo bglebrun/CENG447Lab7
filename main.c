@@ -22,17 +22,12 @@ void Init()
     sei();
 }
 
-unsigned char motorSpeedMap(unsigned int USDistance) {
-    unsigned int ans = ((USDistance - 3) * 255 / 27);
-    return (ans > 255? 255 : ans);
-}
-
 int main()
 {
     Init();
     while (1)
     {
-        
+
     }
     return 1;
 }
