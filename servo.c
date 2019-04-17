@@ -1,5 +1,8 @@
 #include "servo.h"
 
+/* stdout stream */
+static FILE mystdout = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
+
 void initServo()
 {
     // set pin and timers
@@ -11,25 +14,27 @@ void initServo()
     initTimer2();
 }
 
-void moveServo(unsigned int deg) { OCR2A = mapAngle(deg); }
+void moveServo(unsigned char deg) { OCR2B = mapAngle(deg); }
 
 // mapping assumes 0 degrees is full CCW (left) and 180 degrees is full CW
 // (Right)
-unsigned char mapAngle(unsigned int angleDeg)
+unsigned char mapAngle(unsigned char angleDeg)
 {
     unsigned char result;
     if (angleDeg <= 0)
     {
-        result = 8;
+        result = DEG_MAP_MIN;
     }
     else if (angleDeg >= 180)
     {
-        result = 16;
+        result = DEG_MAP_MAX;
     }
     else
     {
-        result = 8 + (unsigned char)((float)angleDeg / 22.5);
+        result = DEG_MAP_MIN + (angleDeg / DEG_PER_UNIT);
     }
+
+    fprintf(&mystdout, "result map: %d\r\n", result);
 
     return result;
 }

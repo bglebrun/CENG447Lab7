@@ -2,26 +2,6 @@
 
 /******************************************************************************
  *
- * Overflow detection helpers
- *
- * Flag for overflow:
- * false = no overflow.
- * true = overflow happened in test
- */
-volatile bool TimerOverflow = false;
-
-// Getter for overflow status
-bool getOverflowStatus() { return TimerOverflow; }
-
-// Overflow vector
-ISR(TIMER1_OVF_vect)
-{
-    // Timer 1 overflow
-    TimerOverflow = true;
-}
-
-/******************************************************************************
- *
  * Ultrasonic sensor functions
  *
  *
@@ -55,7 +35,9 @@ unsigned int readUltrasonic()
 
     unsigned int i = TIM16_ReadTCNT1();
     // 64 us per count in i
-    return (i * 64) / 58;
+    unsigned int result = ((i * 64) / 58);
+
+    return result;
 }
 
 // Triggers ultrasonic sensor, then waits 60 ms

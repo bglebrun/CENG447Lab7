@@ -4,6 +4,7 @@
 #include "globals.h"
 #include "pcint.h"
 #include "pin_map.h"
+// #include "robotIo.h"
 #include "timers.h"
 #include <avr/interrupt.h>
 #include <avr/io.h>
@@ -16,7 +17,6 @@
  * Servo Motor: 3 (portd 3)
  */
 
-bool getOverflowStatus();
 void initUltrasonic();
 void triggerUltrasonic();
 unsigned int readUltrasonic();
