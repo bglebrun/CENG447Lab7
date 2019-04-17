@@ -16,8 +16,8 @@ void initServo()
 
 void moveServo(unsigned char deg) { OCR2B = mapAngle(deg); }
 
-// mapping assumes 0 degrees is full CCW (left) and 180 degrees is full CW
-// (Right)
+// mapping assumes 0 degrees is full CW (right) and 180 degrees is full CCW
+// (left)
 unsigned char mapAngle(unsigned char angleDeg)
 {
     unsigned char result;

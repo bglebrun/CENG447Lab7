@@ -42,12 +42,12 @@ int main()
         printAngleDistance(90, readUltrasonic());
         _delay_ms(500);
         // full CCW (left)
-        moveServo(0);
-        printAngleDistance(0, readUltrasonic());
-        _delay_ms(500);
-        // full CW (right)
         moveServo(180);
         printAngleDistance(180, readUltrasonic());
+        _delay_ms(500);
+        // full CW (right)
+        moveServo(0);
+        printAngleDistance(0, readUltrasonic());
         _delay_ms(500);
         for (unsigned char i = 0; i <= 180; i += 15)
         {
