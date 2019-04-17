@@ -113,7 +113,15 @@ Takes in an angle and returns a mapped PWM value for the angle, exposed
 to allow us to read and debug.
 
 \section*{Discussion}
+With this easier lab, we did some refactoring in our code to make it a little more portable 
+and create fewer external dependancies between our different component files from previous labs.
+Involved a lot of using global headers and learning how the compiler attempts to link object files
+ together containing shared global variables.
 
+The next issue was with range mapping and how we wrote to the timers. Finding min and max ranges 
+was largely just creating three defines, two constants and a calculation of those that found degree steps 
+between those ranges. This was then inserted into the code where needed to streamline the process of finding 
+the best minimum and maximum values to calculate into the timer control register.
 
 \section*{Responses}
 \begin{enumerate}
@@ -121,7 +129,9 @@ to allow us to read and debug.
 1ms or 2ms. What is your servo’s pulse-width response range? How many discrete steps
 does this translate to in your code?
 
-
+Our range responds from approximately half a millisecond to approximately 2.3 milliseconds in pulse-width.
+This gives us approximately 14 steps between it's furthest left to right position with some wobble and 
+innacuracy.
 
 \item  The Arduino libraries allow for any PWM pin to drive servos precisely, not just timer/-
 counter 1. How does the Arduino source code manage this feat? You will have to do some
