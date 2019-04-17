@@ -36,7 +36,8 @@ void initUltrasonic()
     // Echo on A4
     clearBit(DDRC, US_ECHO);
 
-    PORTC = 0x00;
+    clearBit(PORTC, US_TRIG);
+    clearBit(PORTC, US_ECHO);
 
     // setBit(PORTC, US_ECHO); // pull-up for echo
 
