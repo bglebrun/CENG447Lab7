@@ -1,9 +1,9 @@
 #include "ultrasonic.h"
 
 /******************************************************************************
- * 
+ *
  * Overflow detection helpers
- * 
+ *
  * Flag for overflow:
  * false = no overflow.
  * true = overflow happened in test
@@ -21,10 +21,10 @@ ISR(TIMER1_OVF_vect)
 }
 
 /******************************************************************************
- * 
+ *
  * Ultrasonic sensor functions
- * 
- * 
+ *
+ *
  * Sets the pins for ultrasonic sensor,
  * then will setup the necessary timer 1
  * to properly time the sensor
@@ -41,30 +41,21 @@ void initUltrasonic()
 
     // setBit(PORTC, US_ECHO); // pull-up for echo
 
-    /*
-     * Timer 1
-     * Pins 7:4 zeroes
-     * tccr1a high byte zeroes
-     * 16 us
-     */
-    OCR1A = 0;
-    OCR1B = 0;
-    // Start tcount at 1
-    TCNT1 = 0x00;
-    // Normal mode
-    TCCR1A = 0x00;
-
-    // ensure we start with the timer off
-    turnoffTimer1();
+    initTimer1();
 }
 
-unsigned int readUltrasonic() 
+unsigned int readUltrasonic()
 {
     // Trigger the sensor
     triggerUltrasonic();
     // Spin while we either timeout or wait
-    while(!TimerOverflow && !responseAvailable);
-    return timeResponse;
+    while (!TimerOverflow && !responseAvailable)
+    {
+    };
+
+    unsigned int i = TIM16_ReadTCNT1();
+    // 64 us per count in i
+    return (i * 64) / 58;
 }
 
 // Triggers ultrasonic sensor, then waits 60 ms
@@ -78,67 +69,4 @@ void triggerUltrasonic()
     // TIM16_WriteTCNT1(0);
     // Delay while pulse is sent
     _delay_us(60);
-}
-
-/*
- * Gets the current status of timer 1, then
- * converts it into clock/cm
- */
-unsigned int receiveUltrasonic()
-{
-    unsigned int i = TIM16_ReadTCNT1();
-    // 64 us per count in i
-    // return ((58 * 64) / i);
-    return (i * 64) / 58;
-}
-
-/******************************************************************************
- * 
- * Magical Timer land
- * 
- * Prescaler value goes in TCCR1B
- * 0 - off
- * 1 - no prescaling
- * 2 - clock /8
- * 3 - clock /64
- * 4 - clock /256 - 16us
- * 5 - clock /1024 - 64us
- * source -
- * https://sites.google.com/site/qeewiki/books/avr-guide/timers-on-the-atmega328
- */
-
-// convenience function to turn the timer off
-void turnoffTimer1() { TCCR1B &= 0x00; }
-
-// convenience function to turn the timer back on with a default prescaler
-void turnonTimer1() { TCCR1B |= 0x05; }
-
-// Reads from timer 1 counter
-unsigned int TIM16_ReadTCNT1()
-{
-    unsigned char sreg;
-    unsigned int i;
-    // Save global interrupt flag
-    sreg = SREG;
-    // Disable interrupts
-    cli();
-    // Read TCNT1 into i
-    i = TCNT1;
-    // Restore global interrupt flag
-    SREG = sreg;
-    return i;
-}
-
-// Sets timer 1 counter
-void TIM16_WriteTCNT1(unsigned int i)
-{
-    unsigned char sreg;
-    // Save global interrupt flag
-    sreg = SREG;
-    // Disable interrupts
-    cli();
-    // Set TCNT1  to i
-    TCNT1 = i;
-    // Restore global interrupt flag
-    SREG = sreg;
 }

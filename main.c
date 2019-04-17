@@ -8,6 +8,8 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+void printAngleDistance(unsigned char angle, unsigned int distance);
+
 /* stdout stream */
 static FILE mystdout = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 
@@ -36,7 +38,7 @@ int main()
         printAngleDistance(90, readUltrasonic());
         // full CCW (left)
         moveServo(0);
-        printAngleDistance(0, readUltrasonic);
+        printAngleDistance(0, readUltrasonic());
         // full CW (right)
         moveServo(180);
         printAngleDistance(180, readUltrasonic());

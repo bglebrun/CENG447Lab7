@@ -29,7 +29,6 @@ ISR(PCINT1_vect)
     if (highEdge)
     {
         turnoffTimer1();
-        timeResponse = receiveUltrasonic();
         responseAvailable = true;
     }
     else
