@@ -4,5 +4,6 @@
 
 void initServo();
 void moveServo(unsigned int deg);
+unsigned char mapAngle(unsigned int angleDeg);
 
 #endif
