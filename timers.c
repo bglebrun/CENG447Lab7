@@ -1,5 +1,15 @@
 #include "timers.h"
 
+// Getter for overflow status
+bool getOverflowStatus() { return TimerOverflow; }
+
+// Overflow vector
+ISR(TIMER1_OVF_vect)
+{
+    // Timer 1 overflow
+    TimerOverflow = true;
+}
+
 void initTimer0()
 {
     // set both motors to start off
@@ -36,6 +46,9 @@ void initTimer1()
     // Normal mode
     TCCR1A = 0x00;
 
+    // enable overflow interrupt
+    TIMSK1 |= (1 << TOIE1);
+
     // ensure we start with the timer off
     turnoffTimer1();
 }
@@ -61,7 +74,7 @@ void initTimer2()
 
     // phase corrected PWM mode with 1024 clock prescale
     TCCR2A |= (0 << COM2A1) | (0 << COM2A0) | (1 << COM2B1) | (0 << COM2B0) |
-              (1 << WGM21) | (0 << WGM20);
+              (0 << WGM21) | (1 << WGM20);
     TCCR2B |= (1 << WGM22) | (1 << CS22) | (1 << CS21) | (1 << CS20);
 }
 
