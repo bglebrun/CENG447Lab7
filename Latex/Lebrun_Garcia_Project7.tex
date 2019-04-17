@@ -113,59 +113,28 @@ Takes in an angle and returns a mapped PWM value for the angle, exposed
 to allow us to read and debug.
 
 \section*{Discussion}
-Timers and motor drivers are finicky devices, especially on platforms with 
-some degree of inaccuracy. By their inherent design DC motors are not entirely 
-accurate but made to be fast and provide continuous drive. One of our first 
-issues was in driving the motors and accounting for issues with the quality 
-of the build, especially power distribution and toe, camber, and alignment of 
-the wheels on their motors. Some degree of physical manipulation was performed 
-but we ultimately took to software solutions to bias the wheels correctly by 
-adjusting the PWM value written to the output compare registers.
-
-Another issue was using the correct data type. On initial sketch we used integers, 
-however, we later recalled that these are in fact 16 bit values being assigned to 
-8 bit accurate registers. To prevent overflow, we changed these to 8 bit c-character 
-variables immediately.
-
-This lab is fairly straightfoward, using the OCR0X registers directly to write a 
-relative speed between 0-255 in fast PWM mode on a 1024 prescale, we can more or 
-less come to approximate to the easy mode Arduino IDE sketch of setting the digital 
-pins PWM of 0-255. Then it's a matter of writing corresponding functions to 
-make easier controlling the speed and direction to the motors.
 
 
 \section*{Responses}
 \begin{enumerate}
-\item  PWM frequency for Timer 0 is controlled by the clock-select bits in TCCR0B. Test all five
-PWM output frequencies while holding OCR0n static. What effects do you see on motor
-speed/torque? Drawing on your knowledge from Circuits II, what is happening?
-
-As we increase the prescaler, the motors start to whine to even higher pitches as we increase the scale
-of the clock until what we suspect is a barely audible noise at 16MHz which is the absolute highest clock.
-In addition, as we went up through the pre-scalers, there was a noticable loss of torque as the prescale value 
-was increased. At a prescale value of 1, no prescale, we suspect there's some resolution or overflow happening, as 
-the motors remained on full power as it ran through the lab test program.
-
-The internal of the motor is a coil of wire around a magnet which is attempting to either attract itself 
-or deflect itself against the poles of the magnet and the poles of the magnetic inductive force around the 
-driving coils. When our prescale value is too high for this reaction to take place and affects the total duty
-cycle available to the DC motor. In the case of the extremely high frequencies to our motors, the full duty 
-cycle is not being executed.
+\item Not all hobby servos are made equal. Yours may have different lower/upper bounds than
+1ms or 2ms. What is your servo’s pulse-width response range? How many discrete steps
+does this translate to in your code?
 
 
 
-\item  Watchdog timers are a critical part of robust embedded systems. How do watchdog timers
-function? Does the ATMega328P include a watchdog timer? If so, from where does it pull
-its clock signal? To what value would one set WDTCSR if they wanted to reset the system
-after one second of inactivity?
+\item  The Arduino libraries allow for any PWM pin to drive servos precisely, not just timer/-
+counter 1. How does the Arduino source code manage this feat? You will have to do some
+digging and exposition here.
 
-A watchdog timer is a timer that, when hitting a timeout, will attempt to reset the entire 
-system. This is generally used to check for faults or large values of other timers and systems 
-to prevent hanging of the entire system. It's generally good practice to reset or refresh the watchdog 
-timer value at the end of certain processes to ensure it doesn't erroneously reset the entire system.
+In the internal analogWrite() function inside the arduino libraries, the analog function only works 
+on pins connected to a timer. Otherwise the arduino will switch to a digital in/out write.
 
-The ATMega328P does have a watchdog timer which pulls from it's own independent clock generator. One 
-would set the last four bits of the WDTCSR register to 0110 for a one second watchdog timer.
+Otherwise, for each induvidual pin, the internal code attempts to read the correct pin/timer combo 
+with a switch statement and will then configure quickly the correct PWM mode that takes in a 
+value between 0 and 255 that can be directly written to the corresponding OCRXN register. To save time 
+and create simplicity, in processing this correct pin/timer combo, if the values are 0 or 255, 
+the analogWrite function defaults to just writing to those pins digitally high or low.
 
 
 \end{enumerate} 
@@ -176,9 +145,18 @@ Table of contents:
 \begin{itemize}
     \item main.c - entry, initialization and drive instructions
     \item bit\_macros.h - bit manipulations macros
-    \item motor\_driver.h - header file for main motor driver
-    \item motor\_driver.c - main c file for motor driver
-    \item pin\_map.h - map of our motor pins
+    \item globals.h - global variables needed by libraries using timers
+    \item pcint.h - Pin change interrupt header for ultrasonic sensor
+    \item pcint.c - Pin change interrupt code for ultrasonic sensor
+    \item pin\_map.h - Pin map header for device
+    \item robotio.h - UART control header
+    \item robotio.c - UART control code
+    \item servo.h - Servo control library
+    \item servo.c - Servo control code
+    \item timers.h - Timers control library
+    \item timers.c - Timers control code
+    \item ultrasonic.h - Ultrasonic header file
+    \item ultrasonic.c - Ultrasonic code file
 \end{itemize}
 \newpage
 
@@ -194,21 +172,75 @@ Table of contents:
 \end{tiny}
 \newpage
 
-\section*{Appendix C: motor\_driver.h}
+\section*{Appendix C: globals.h}
 \begin{tiny}
-\lstinputlisting{../motor_driver.h}
+\lstinputlisting{../globals.h}
 \end{tiny}
 \newpage
 
-\section*{Appendix D: motor\_driver.c}
+\section*{Appendix F: pcint.h}
 \begin{tiny}
-\lstinputlisting{../motor_driver.c}
+\lstinputlisting{../pcint.c}
 \end{tiny}
 \newpage
 
-\section*{Appendix E: pin\_map.h}
+\section*{Appendix G: pcint.c}
+\begin{tiny}
+\lstinputlisting{../pcint.c}
+\end{tiny}
+\newpage
+
+\section*{Appendix G: pin\_map.h}
 \begin{tiny}
 \lstinputlisting{../pin_map.h}
+\end{tiny}
+\newpage
+
+\section*{Appendix H: robotio.h}
+\begin{tiny}
+\lstinputlisting{../robotio.h}
+\end{tiny}
+\newpage
+
+\section*{Appendix H: robotio.c}
+\begin{tiny}
+\lstinputlisting{../robotio.c}
+\end{tiny}
+\newpage
+
+\section*{Appendix H: servo.h}
+\begin{tiny}
+\lstinputlisting{../servo.h}
+\end{tiny}
+\newpage
+
+\section*{Appendix H: servo.c}
+\begin{tiny}
+\lstinputlisting{../servo.c}
+\end{tiny}
+\newpage
+
+\section*{Appendix H: timers.h}
+\begin{tiny}
+\lstinputlisting{../timers.h}
+\end{tiny}
+\newpage
+
+\section*{Appendix H: timers.c}
+\begin{tiny}
+\lstinputlisting{../timers.c}
+\end{tiny}
+\newpage
+
+\section*{Appendix H: ultrasonic.h}
+\begin{tiny}
+\lstinputlisting{../ultrasonic.h}
+\end{tiny}
+\newpage
+
+\section*{Appendix H: ultrasonic.c}
+\begin{tiny}
+\lstinputlisting{../ultrasonic.c}
 \end{tiny}
 \newpage
 
